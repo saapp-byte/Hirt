@@ -1,5 +1,4 @@
 {
   "name": "hirt-iptal",
-  "private": true,
-  "workspaces": ["apps/mobile", "packages/*"]
+  "private": true
 }
