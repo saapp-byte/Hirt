@@ -1,0 +1,18 @@
+{"_not": "verified=true: yayıncının kendi RSS sayfasında yayımlanan adres. verified=false: aday; 'python check_sources.py' ile test edin, çalışmayanlar otomatik devre dışı kalır. Tam metin okuma robots.txt'e tabidir.",
+ "feeds": [
+  {"name": "GZT Güvenlik", "outlet": "GZT", "url": "https://www.gzt.com/rss-feeds?category=/gundem/guvenlik", "verified": true, "scope": "national"},
+  {"name": "GZT Yerel Haberler", "outlet": "GZT", "url": "https://www.gzt.com/rss-feeds?category=/gundem/yerel-haberler", "verified": true, "scope": "local"},
+  {"name": "GZT Afet ve Kaza", "outlet": "GZT", "url": "https://www.gzt.com/rss-feeds?category=/gundem/afet-kaza", "verified": true, "scope": "national"},
+  {"name": "GZT Gündem", "outlet": "GZT", "url": "https://www.gzt.com/rss?category=gundem", "verified": true, "scope": "national"},
+  {"name": "Habertürk Yerel Haberler", "outlet": "Habertürk", "url": "https://www.haberturk.com/rss/yerel-haberler.xml", "verified": true, "scope": "local"},
+  {"name": "Habertürk Tüm Haberler", "outlet": "Habertürk", "url": "https://www.haberturk.com/rss", "verified": true, "scope": "national"},
+  {"name": "AA Güncel", "outlet": "Anadolu Ajansı", "url": "https://www.aa.com.tr/tr/rss/default?cat=guncel", "verified": false, "scope": "agency"},
+  {"name": "TRT Haber Son Dakika", "outlet": "TRT Haber", "url": "https://www.trthaber.com/sondakika.rss", "verified": false, "scope": "national"},
+  {"name": "NTV Gündem", "outlet": "NTV", "url": "https://www.ntv.com.tr/gundem.rss", "verified": false, "scope": "national"},
+  {"name": "CNN Türk", "outlet": "CNN Türk", "url": "https://www.cnnturk.com/feed/rss/all/news", "verified": false, "scope": "national"},
+  {"name": "Hürriyet Gündem", "outlet": "Hürriyet", "url": "https://www.hurriyet.com.tr/rss/gundem", "verified": false, "scope": "national"},
+  {"name": "Sabah Gündem", "outlet": "Sabah", "url": "https://www.sabah.com.tr/rss/gundem.xml", "verified": false, "scope": "national"},
+  {"name": "Milliyet Gündem", "outlet": "Milliyet", "url": "https://www.milliyet.com.tr/rss/rssnew/gundemrss.xml", "verified": false, "scope": "national"},
+  {"name": "Cumhuriyet Son Dakika", "outlet": "Cumhuriyet", "url": "https://www.cumhuriyet.com.tr/rss/son_dakika.xml", "verified": false, "scope": "national"},
+  {"name": "Yeni Şafak Gündem", "outlet": "Yeni Şafak", "url": "https://www.yenisafak.com/rss?xml=gundem", "verified": false, "scope": "national"}
+ ]}

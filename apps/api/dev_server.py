@@ -1,8 +1,9 @@
 """Kurulum gerektirmeyen geliştirme sunucusu (Termux için). Çalıştır: python dev_server.py"""
 import json
 import re
+from urllib.parse import parse_qs, urlparse
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from service import get_events, get_summary
+from service import get_areas, get_events, get_summary
 
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, body):
@@ -15,9 +16,13 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
-        path = self.path.split("?")[0]
+        url = urlparse(self.path)
+        path, query = url.path, parse_qs(url.query)
         if path == "/health":
             return self._send(200, {"ok": True})
+        if path == "/areas":
+            parent = query.get("parent", [None])[0]
+            return self._send(200, get_areas(int(parent) if parent and parent.isdigit() else None))
         if path == "/events":
             return self._send(200, get_events())
         m = re.fullmatch(r"/areas/(\d+)/summary", path)

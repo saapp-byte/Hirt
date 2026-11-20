@@ -29,6 +29,8 @@ export default function AreaScreen({ summary, onBack }: { summary: Summary; onBa
         <View style={s.why}>
           <Text style={s.whyText}><Text style={{ fontWeight: '700' }}>Ne yapmalıyım? </Text>{adviceTr(summary.level)}{'\n\n'}Bu değerlendirme geçmiş olaylara dayanan bir tahmindir, kesin hüküm değildir.</Text>
         </View>
+        {summary.time_reliable !== false ? (
+          <>
         <Text style={s.label}>OLAYLAR HANGİ SAATLERDE? (turuncu: olay bildirilen saatler)</Text>
         <View style={s.bars}>
           {summary.by_time.map((n, i) => (
@@ -38,6 +40,10 @@ export default function AreaScreen({ summary, onBack }: { summary: Summary; onBa
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {LABELS.map((l) => <Text key={l} style={s.hour}>{l}</Text>)}
         </View>
+          </>
+        ) : (
+          <Text style={s.note}>Haberlerde olayın saati yer almadığı için saat dağılımı gösterilmiyor. Son {summary.window_days ?? 30} günde {summary.event_count ?? summary.events.length} olay bildirildi.</Text>
+        )}
         <Text style={[s.label, { marginTop: 8 }]}>SON OLAYLAR · KAYNAĞIYLA</Text>
         {summary.events.map((e, i) => (
           <View key={i} style={s.ev}>
@@ -68,6 +74,7 @@ const s = StyleSheet.create({
   why: { padding: 16, borderRadius: 20, backgroundColor: C.coralSoft },
   whyText: { fontSize: 16, lineHeight: 24, color: C.coralText },
   bars: { flexDirection: 'row', gap: 8, height: 64 },
+  note: { fontSize: 15, lineHeight: 22, color: C.sub },
   hour: { flex: 1, textAlign: 'center', fontSize: 11, color: C.sub },
   ev: { padding: 14, borderRadius: 16, borderWidth: 1, borderColor: '#E9E0CD' },
   evTitle: { fontSize: 14, fontWeight: '600', color: C.ink },

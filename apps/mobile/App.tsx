@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { Summary, fetchSummary } from './src/api';
+import { Area, Summary, fetchAreas, fetchSummary } from './src/api';
 import { C } from './src/theme';
 import { FadeIn } from './src/ui';
 import AreaScreen from './src/screens/AreaScreen';
@@ -16,9 +16,22 @@ export default function App() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [hintOpen, setHintOpen] = useState(true);
 
+  const [areas, setAreas] = useState<Area[]>([]);
+  const [areaId, setAreaId] = useState<number | null>(null);
+
+  // İlçe listesini al; varsayılan olarak en çok haber çıkan ilçeyi aç
   useEffect(() => {
-    fetchSummary(1).then((r) => setSummary(r.data));
+    fetchAreas().then((a) => {
+      setAreas(a);
+      setAreaId(a.length ? a[0].id : 1);
+    });
   }, []);
+
+  useEffect(() => {
+    if (areaId === null) return;
+    setSummary(null);
+    fetchSummary(areaId).then((r) => setSummary(r.data));
+  }, [areaId]);
 
   const showTabs = screen === 'map' || screen === 'info';
   const Tab = ({ id, label }: { id: Screen; label: string }) => (
@@ -33,7 +46,7 @@ export default function App() {
       <StatusBar style="dark" />
       <FadeIn key={screen} rise={10} style={{ flex: 1 }}>
         {screen === 'onboard' && <Onboarding onStart={() => setScreen('map')} />}
-        {screen === 'map' && <MapScreen summary={summary} onOpen={() => setScreen('area')} hintOpen={hintOpen} onCloseHint={() => setHintOpen(false)} />}
+        {screen === 'map' && <MapScreen summary={summary} areas={areas} onPick={setAreaId} onOpen={() => setScreen('area')} hintOpen={hintOpen} onCloseHint={() => setHintOpen(false)} />}
         {screen === 'area' && summary && <AreaScreen summary={summary} onBack={() => setScreen('map')} />}
         {screen === 'info' && <HowItWorks />}
       </FadeIn>

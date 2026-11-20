@@ -6,6 +6,7 @@ const LEVELS = [
   ['#E8A317', 'Hafif tedbirli', 'Bazı saatlerde dikkatli olmak iyi olur.'],
   ['#F07B3F', 'Tedbirli', 'Özellikle geceleri dikkat gerekir.'],
   ['#E5484D', 'Dikkatli ol', 'Yakın zamanda çok sayıda olay bildirildi.'],
+  ['#8A8599', 'Kayıt yok', 'Tarama sonucunda bulunamadı. Güvenli demek değildir.'],
 ];
 
 export default function HowItWorks() {
@@ -24,6 +25,9 @@ export default function HowItWorks() {
 
       <Text style={s.h2}>Bilgiler nereden geliyor?</Text>
       <Text style={s.p}>Haber siteleri, resmi açıklamalar ve topluluk bildirimleri. Her olayın yanında kaynağı ve ne kadar güvenilir olduğu yazar.</Text>
+
+      <Text style={s.h2}>"Kayıt yok" ne demek?</Text>
+      <Text style={s.p}>Gri etiket, tarama sonucunda o bölge için haber bulunamadığını gösterir. Uygulama her haberi yakalayamaz; başlığında ilçe adı geçmeyen haberler atlanır. Bu yüzden "Kayıt yok", güvenli demek değildir.</Text>
 
       <Text style={s.h2}>Önemli not</Text>
       <View style={s.note}>

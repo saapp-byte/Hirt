@@ -1,0 +1,6 @@
+apps/mobile
+**/__pycache__
+services/ingest/data
+.git
+node_modules
+docs

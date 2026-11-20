@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: hirt-api
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /health
+    disk:
+      name: hirt-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: HIRT_DATA_DIR
+        value: /var/data
+      - key: INGEST_EVERY_HOURS
+        value: "3"

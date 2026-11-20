@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Easing, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapArt from '../MapArt';
-import { Summary, adviceTr, levelColor, levelSegments } from '../api';
+import { Area, Summary, adviceTr, levelColor, levelSegments } from '../api';
 import { C } from '../theme';
 import { FadeIn, PressScale } from '../ui';
 
-type Props = { summary: Summary | null; onOpen: () => void; hintOpen: boolean; onCloseHint: () => void };
+type Props = { summary: Summary | null; areas: Area[]; onPick: (id: number) => void; onOpen: () => void; hintOpen: boolean; onCloseHint: () => void };
 
-export default function MapScreen({ summary, onOpen, hintOpen, onCloseHint }: Props) {
+export default function MapScreen({ summary, areas, onPick, onOpen, hintOpen, onCloseHint }: Props) {
   const [when, setWhen] = useState('Bu gece');
+  const [pickerOpen, setPickerOpen] = useState(false);
   const slide = useRef(new Animated.Value(320)).current;
   useEffect(() => {
     Animated.timing(slide, { toValue: 0, duration: 520, delay: 150, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
@@ -22,6 +23,7 @@ export default function MapScreen({ summary, onOpen, hintOpen, onCloseHint }: Pr
         <Pressable style={s.search} onPress={() => Alert.alert('Yakında', 'Yer arama sonraki sürümde.')} accessibilityLabel="Yer ara">
           <Text style={s.searchText}>Yer ara (yakında)</Text>
         </Pressable>
+        {summary?.time_reliable === true && (
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {['Şimdi', 'Bu gece', 'Hafta sonu'].map((t) => (
             <PressScale key={t} onPress={() => setWhen(t)} style={[s.chip, when === t && s.chipOn]}>
@@ -29,6 +31,7 @@ export default function MapScreen({ summary, onOpen, hintOpen, onCloseHint }: Pr
             </PressScale>
           ))}
         </View>
+        )}
         {hintOpen && (
           <FadeIn style={s.hint} delay={700}>
             <Text style={s.hintText}>Turuncu alanlar, son haftalarda olay bildirilen yerleri gösterir. Aşağıdaki kart bulunduğun bölgeyi özetler.</Text>
@@ -41,9 +44,12 @@ export default function MapScreen({ summary, onOpen, hintOpen, onCloseHint }: Pr
         <View style={s.handle} />
         {!summary ? <ActivityIndicator color={C.ink} style={{ margin: 40 }} /> : (
           <>
-            <Text style={s.place}>{summary.name}, {summary.district}</Text>
+            <Pressable onPress={() => setPickerOpen(true)} accessibilityLabel="İlçe değiştir" style={s.placeRow}>
+              <Text style={s.place}>{summary.name}, {summary.district}</Text>
+              <Text style={s.change}>İlçe değiştir ›</Text>
+            </Pressable>
             <View style={[s.pill, { backgroundColor: color }]}>
-              <Text style={s.pillText}>{when}: {summary.level}</Text>
+              <Text style={s.pillText}>{summary.level === 'Kayıt yok' ? summary.level : `${summary.time_reliable === false ? 'Son 30 gün' : when}: ${summary.level}`}</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: 6 }}>
               {[1, 2, 3, 4, 5].map((i) => <FadeIn key={i} rise={0} delay={500 + i * 90} style={{ flex: 1 }}><View style={[s.seg, i <= segs && { backgroundColor: color }]} /></FadeIn>)}
@@ -54,6 +60,26 @@ export default function MapScreen({ summary, onOpen, hintOpen, onCloseHint }: Pr
           </>
         )}
       </Animated.View>
+      <Modal visible={pickerOpen} animationType="slide" transparent onRequestClose={() => setPickerOpen(false)}>
+        <View style={s.modalBg}>
+          <View style={s.modalCard}>
+            <Text style={s.modalTitle}>İlçe seç</Text>
+            <ScrollView>
+              {areas.length === 0 && <Text style={s.rowSub}>İlçe listesi alınamadı. API çalışıyor mu?</Text>}
+              {areas.map((a) => (
+                <Pressable key={a.id} style={s.row} onPress={() => { onPick(a.id); setPickerOpen(false); }}>
+                  <View style={[s.dot, { backgroundColor: levelColor(a.level) }]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.rowName}>{a.name}</Text>
+                    <Text style={s.rowSub}>{a.count > 0 ? `${a.count} olay · ${a.level}` : 'Kayıt yok'}</Text>
+                  </View>
+                </Pressable>
+              ))}
+            </ScrollView>
+            <PressScale style={s.btn} onPress={() => setPickerOpen(false)}><Text style={s.btnText}>Kapat</Text></PressScale>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -79,4 +105,13 @@ const s = StyleSheet.create({
   tag: { alignSelf: 'flex-start', fontSize: 11, fontWeight: '600', color: C.sub, backgroundColor: '#F1E9D8', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, overflow: 'hidden' },
   btn: { minHeight: 54, borderRadius: 27, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   btnText: { color: C.bg, fontSize: 16, fontWeight: '600' },
+  placeRow: { gap: 2, minHeight: 44, justifyContent: 'center' },
+  change: { fontSize: 14, fontWeight: '600', color: C.sub },
+  modalBg: { flex: 1, backgroundColor: 'rgba(29,27,46,0.45)', justifyContent: 'flex-end' },
+  modalCard: { maxHeight: '80%', backgroundColor: C.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, gap: 12 },
+  modalTitle: { fontSize: 22, fontWeight: '700', color: C.ink },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 56, borderBottomWidth: 1, borderBottomColor: '#EFE7D6' },
+  dot: { width: 14, height: 14, borderRadius: 7 },
+  rowName: { fontSize: 17, fontWeight: '600', color: C.ink },
+  rowSub: { fontSize: 14, color: C.sub },
 });

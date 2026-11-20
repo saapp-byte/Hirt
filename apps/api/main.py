@@ -1,12 +1,16 @@
 """FastAPI sürümü (gerçek sunucu için). Çalıştır: uvicorn main:app --host 0.0.0.0 --port 8000"""
 from fastapi import FastAPI, HTTPException
-from service import get_events, get_summary
+from service import get_areas, get_events, get_summary
 
 app = FastAPI(title="Hırt İPTAL API")
 
 @app.get("/health")
 def health():
     return {"ok": True}
+
+@app.get("/areas")
+def areas(parent: int | None = None):
+    return get_areas(parent)
 
 @app.get("/events")
 def events():

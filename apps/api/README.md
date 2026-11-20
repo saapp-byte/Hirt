@@ -14,4 +14,5 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 Not: Termux'ta `pydantic-core` derlenemediği için FastAPI orada kurulmaz.
 
-Uç noktalar: `/health`, `/events`, `/areas/{id}/summary`
+Uç noktalar: `/health`, `/events`, `/areas` (81 il), `/areas?parent=34` (ilin ilçeleri), `/areas?parent=<ilçe>` (olay olan mahalleler), `/areas/{id}/summary`.
+Kimlikler: il = plaka (1-81), ilçe/mahalle = 1000+.
