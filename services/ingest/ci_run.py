@@ -1,10 +1,17 @@
 """GitHub Actions turu (ücretsiz): konum veritabanını zaman bütçesiyle tamamlar -> haberleri tarar -> statik JSON üretir.
 Kullanım: HIRT_DATA_DIR=<kalıcı klasör> python services/ingest/ci_run.py <çıktı klasörü>"""
 import os
+import socket
 import sys
 import time
 from argparse import Namespace
 from pathlib import Path
+
+# GitHub Actions makineleri IPv6'ya çıkamıyor ("Network is unreachable"): yalnızca IPv4 kullan.
+_getaddrinfo = socket.getaddrinfo
+def _ipv4_only(host, port, family=0, *a, **k):
+    return _getaddrinfo(host, port, socket.AF_INET, *a, **k)
+socket.getaddrinfo = _ipv4_only
 
 HERE = Path(__file__).resolve().parent
 sys.path += [str(HERE), str(HERE.parents[1] / "packages" / "geo"), str(HERE.parents[1] / "apps" / "api")]

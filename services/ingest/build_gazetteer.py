@@ -22,7 +22,12 @@ sys.path.append(str(Path(__file__).resolve().parents[2] / "packages" / "geo"))
 import gazetteer  # noqa: E402
 from fold import fold  # noqa: E402
 
-ENDPOINT = "https://overpass-api.de/api/interpreter"
+ENDPOINTS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+]
+ENDPOINT = ENDPOINTS[0]
 STRIP = {"mahallesi", "mahalle", "mah", "mh", "koyu", "koy", "ilcesi", "belediyesi"}
 SKIP = {"merkez", "merkezi"}
 
@@ -36,9 +41,10 @@ def query_for(plate: int) -> str:
 def overpass(q: str, retries: int = 4):
     delay = 30
     for attempt in range(retries + 1):
+        endpoint = ENDPOINTS[attempt % len(ENDPOINTS)]  # her denemede sıradaki sunucuyu dene
         try:
             data = urllib.parse.urlencode({"data": q}).encode()
-            req = urllib.request.Request(ENDPOINT, data=data, headers={"User-Agent": "HirtIptal gazetteer"})
+            req = urllib.request.Request(endpoint, data=data, headers={"User-Agent": "HirtIptal gazetteer"})
             with urllib.request.urlopen(req, timeout=330) as r:
                 return json.loads(r.read())
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
@@ -46,7 +52,7 @@ def overpass(q: str, retries: int = 4):
             if attempt < retries and (code in (429, 502, 503, 504) or code is None):
                 print(f"    bekleniyor ({code or e}), {delay} sn sonra yeniden...")
                 time.sleep(delay)
-                delay *= 2
+                delay = min(delay * 2, 120)
                 continue
             raise
 
