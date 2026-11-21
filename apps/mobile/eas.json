@@ -4,7 +4,7 @@
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://CHANGE-ME.onrender.com" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://saapp-byte.github.io/Hirt" }
     }
   }
 }

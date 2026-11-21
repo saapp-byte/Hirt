@@ -1,0 +1,65 @@
+name: Haberleri güncelle ve yayınla
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # her 3 saatte bir
+  workflow_dispatch:         # elle başlatma
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: hirt-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Önceki durumu al (data dalı)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git ls-remote --exit-code --heads "https://github.com/${GITHUB_REPOSITORY}.git" data >/dev/null 2>&1; then
+            git clone --depth 1 --branch data "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" state
+            rm -rf state/.git
+          else
+            mkdir state
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Konum veritabanını tamamla, haberleri tara, JSON üret
+        env:
+          HIRT_DATA_DIR: ${{ github.workspace }}/state
+          GAZETTEER_MINUTES: "40"
+          HIRT_NO_SAMPLE: "1"
+        run: python services/ingest/ci_run.py site
+
+      - name: Durumu kaydet (data dalı)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd state
+          git init -q -b data
+          git add -A
+          git -c user.name=hirt-bot -c user.email=hirt-bot@users.noreply.github.com commit -q -m "durum $(date -u +%F-%H%M)"
+          git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

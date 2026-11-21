@@ -1,6 +1,7 @@
 """API mantığı (çerçeveden bağımsız). Türkiye geneli: il -> ilçe -> mahalle.
 Gerçek veri varsa onu, yoksa örnek veriyi kullanır."""
 import json
+import os
 import sqlite3
 import sys
 from datetime import datetime, timedelta, timezone
@@ -55,6 +56,8 @@ def _load():
                             "source": names[0] + (f" +{len(names) - 1} kaynak" if len(names) > 1 else ""),
                             "url": sources[0]["url"], "street": street, "time_precision": tprec, "outcome": outcome})
             return out, False
+    if os.environ.get("HIRT_NO_SAMPLE") == "1":  # yayında örnek veri gösterme
+        return [], False
     out = [dict(e, province_id=34, district_id=1001, neighborhood_id=None, precision="ilce",
                 label="Kadıköy, İstanbul", url=None, street=None, time_precision="saat", outcome=None) for e in sample_data.EVENTS]
     return out, True

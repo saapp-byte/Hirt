@@ -1,5 +1,6 @@
-// Yayında: EXPO_PUBLIC_API_URL (eas.json) sunucu adresidir. Yoksa aynı telefondaki Termux API'sine bağlanır.
-export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
+// Veriler GitHub Pages'te statik JSON olarak yayınlanır (haber tarama GitHub Actions'ta çalışır).
+// Yerel denemede: EXPO_PUBLIC_API_URL=http://localhost:8000 (apps/api/dev_server.py aynı yolları sunar).
+export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://saapp-byte.github.io/Hirt';
 
 export type Summary = {
   name: string; district: string; level: string; score: number;
@@ -23,7 +24,7 @@ export const FALLBACK: Summary = {
 export async function fetchSummary(id = 1): Promise<{ data: Summary; live: boolean }> {
   try {
     const res = await Promise.race([
-      fetch(`${API_URL}/areas/${id}/summary`),
+      fetch(`${API_URL}/summary/${id}.json`),
       new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
     ]);
     if (!res.ok) throw new Error('http');
@@ -58,10 +59,10 @@ export const levelColor = (level: string) =>
 
 export type Area = { id: number; name: string; level: string; score: number; count: number; sample_data: boolean };
 
-export async function fetchAreas(): Promise<Area[]> {
+export async function fetchAreas(parent?: number): Promise<Area[]> {
   try {
     const res = await Promise.race([
-      fetch(`${API_URL}/areas`),
+      fetch(parent ? `${API_URL}/areas/${parent}.json` : `${API_URL}/areas.json`),
       new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
     ]);
     if (!res.ok) throw new Error('http');

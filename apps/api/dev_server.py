@@ -18,6 +18,15 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         url = urlparse(self.path)
         path, query = url.path, parse_qs(url.query)
+        m = re.fullmatch(r"/summary/(\d+)\.json", path)
+        if m:
+            data = get_summary(int(m.group(1)))
+            return self._send(200, data) if data else self._send(404, {"error": "Bölge bulunamadı"})
+        m = re.fullmatch(r"/areas/(\d+)\.json", path)
+        if m:
+            return self._send(200, get_areas(int(m.group(1))))
+        if path == "/areas.json":
+            return self._send(200, get_areas())
         if path == "/health":
             return self._send(200, {"ok": True})
         if path == "/areas":

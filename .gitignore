@@ -2,3 +2,5 @@ node_modules/
 .expo/
 __pycache__/
 services/ingest/data/
+site/
+state/

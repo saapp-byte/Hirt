@@ -12,5 +12,7 @@ services:
     envVars:
       - key: HIRT_DATA_DIR
         value: /var/data
+      - key: HIRT_NO_SAMPLE
+        value: "1"
       - key: INGEST_EVERY_HOURS
         value: "3"
