@@ -10,6 +10,7 @@ Not: OSM'de Türkiye için mahalle/köy seviyeleri (8-10) tutarlı değildir; bu
 """
 import argparse
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -32,10 +33,12 @@ STRIP = {"mahallesi", "mahalle", "mah", "mh", "koyu", "koy", "ilcesi", "belediye
 SKIP = {"merkez", "merkezi"}
 
 def query_for(plate: int) -> str:
-    return (f'[out:json][timeout:300];\n'
+    # Varsayılan: yalnızca ilçeler (hafif, hızlı). Mahalleler için HIRT_MAHALLE=1 (ağır; sunucu zaman aşımına düşebilir).
+    levels = "6|8|9|10" if os.environ.get("HIRT_MAHALLE") == "1" else "6"
+    return (f'[out:json][timeout:120];\n'
             f'rel["boundary"="administrative"]["admin_level"="4"]["ISO3166-2"="TR-{plate:02d}"];\n'
             f'map_to_area->.a;\n'
-            f'rel(area.a)["boundary"="administrative"]["admin_level"~"^(6|8|9|10)$"];\n'
+            f'rel(area.a)["boundary"="administrative"]["admin_level"~"^({levels})$"];\n'
             f'out center tags;')
 
 def overpass(q: str, retries: int = 4):
@@ -45,7 +48,7 @@ def overpass(q: str, retries: int = 4):
         try:
             data = urllib.parse.urlencode({"data": q}).encode()
             req = urllib.request.Request(endpoint, data=data, headers={"User-Agent": "HirtIptal gazetteer"})
-            with urllib.request.urlopen(req, timeout=330) as r:
+            with urllib.request.urlopen(req, timeout=150) as r:
                 return json.loads(r.read())
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
             code = getattr(e, "code", None)
