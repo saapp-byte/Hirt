@@ -22,6 +22,7 @@ CREATE INDEX IF NOT EXISTS ix_places_prov ON places(province_id, level);
 CREATE INDEX IF NOT EXISTS ix_places_dist ON places(district_id);
 CREATE TABLE IF NOT EXISTS aliases (folded TEXT NOT NULL, place_id INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS loaded (province_id INTEGER PRIMARY KEY, n_ilce INTEGER, n_mahalle INTEGER, at TEXT);
+CREATE TABLE IF NOT EXISTS loaded_mah (district_id INTEGER PRIMARY KEY, n INTEGER, at TEXT);
 """
 
 def connect(path=DB_PATH):

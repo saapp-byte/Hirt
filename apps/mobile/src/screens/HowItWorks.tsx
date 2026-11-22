@@ -2,10 +2,10 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { C } from '../theme';
 
 const LEVELS = [
-  ['#2E9E8A', 'Sakin', 'Son zamanlarda dikkat çeken olay yok.'],
-  ['#E8A317', 'Hafif tedbirli', 'Bazı saatlerde dikkatli olmak iyi olur.'],
-  ['#F07B3F', 'Tedbirli', 'Özellikle geceleri dikkat gerekir.'],
-  ['#E5484D', 'Dikkatli ol', 'Yakın zamanda çok sayıda olay bildirildi.'],
+  ['#2E9E8A', 'Sakin', 'Son 30 günde dikkat çeken olay görünmüyor.'],
+  ['#E8A317', 'Hafif tedbirli', 'Son 30 günde birkaç olay bildirildi.'],
+  ['#F07B3F', 'Tedbirli', 'Son 30 günde olay sayısı belirgin.'],
+  ['#E5484D', 'Dikkatli ol', 'Son 30 günde çok sayıda olay bildirildi.'],
   ['#8A8599', 'Kayıt yok', 'Tarama sonucunda bulunamadı. Güvenli demek değildir.'],
 ];
 
@@ -13,7 +13,7 @@ export default function HowItWorks() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: C.bg }} contentContainerStyle={s.pad}>
       <Text style={s.h1}>Nasıl çalışır?</Text>
-      <Text style={s.p}>Uygulama, haberlerden ve topluluk bildirimlerinden olayları toplar ve bir bölgenin hangi saatlerde nasıl olduğunu özetler.</Text>
+      <Text style={s.p}>Uygulama, Türkiye’deki haber sitelerini düzenli tarar; kavga, saldırı ve bıçaklama haberlerini bulur ve bölge bölge özetler.</Text>
 
       <Text style={s.h2}>Renkler ne anlama geliyor?</Text>
       {LEVELS.map(([color, name, desc]) => (
@@ -24,7 +24,7 @@ export default function HowItWorks() {
       ))}
 
       <Text style={s.h2}>Bilgiler nereden geliyor?</Text>
-      <Text style={s.p}>Haber siteleri, resmi açıklamalar ve topluluk bildirimleri. Her olayın yanında kaynağı ve ne kadar güvenilir olduğu yazar.</Text>
+      <Text style={s.p}>Yalnızca haber siteleri ve haber arama sonuçları. Her olayın yanında kaynağı, haberin bağlantısı ve güven düzeyi yazar. Olaylar başlıklardan otomatik çıkarıldığı için hata olabilir.</Text>
 
       <Text style={s.h2}>"Kayıt yok" ne demek?</Text>
       <Text style={s.p}>Gri etiket, tarama sonucunda o bölge için haber bulunamadığını gösterir. Uygulama her haberi yakalayamaz; başlığında ilçe adı geçmeyen haberler atlanır. Bu yüzden "Kayıt yok", güvenli demek değildir.</Text>
@@ -35,7 +35,7 @@ export default function HowItWorks() {
       </View>
 
       <Text style={s.h2}>Gizlilik</Text>
-      <Text style={s.p}>Kişileri değil, olayları ve yerleri gösteririz. Konumun cihazında kalır.</Text>
+      <Text style={s.p}>Kişileri değil, olayları ve yerleri gösteririz. Uygulama konumunu istemez ve kişisel veri toplamaz.</Text>
     </ScrollView>
   );
 }

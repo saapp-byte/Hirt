@@ -41,6 +41,28 @@ def query_for(plate: int) -> str:
             f'rel(area.a)["boundary"="administrative"]["admin_level"~"^({levels})$"];\n'
             f'out center tags;')
 
+def query_district(osm_id: str) -> str:
+    """Tek bir ilçenin mahalleleri (küçük sorgu; tüm ili tek seferde istemekten çok daha hafif)."""
+    rid = int(osm_id.split("/")[1])
+    return (f'[out:json][timeout:90];\n'
+            f'rel({rid});\n'
+            f'map_to_area->.a;\n'
+            f'rel(area.a)["boundary"="administrative"]["admin_level"~"^(8|9|10)$"];\n'
+            f'out center tags;')
+
+def load_district(conn, district_id, plate, parsed):
+    """Bir ilçenin mahallelerini yazar (ilçe kesin bilinir, 'en yakın' tahmini yok)."""
+    n = 0
+    for p in (x for x in parsed if x["level"] == "mahalle"):
+        if conn.execute("SELECT 1 FROM places WHERE osm_id=?", (p["osm_id"],)).fetchone():
+            continue
+        conn.execute("INSERT INTO places(level,name,folded,province_id,district_id,lat,lng,osm_id) VALUES ('mahalle',?,?,?,?,?,?,?)",
+                     (p["name"], p["folded"], plate, district_id, p["lat"], p["lng"], p["osm_id"]))
+        n += 1
+    conn.execute("INSERT OR REPLACE INTO loaded_mah VALUES (?,?,?)", (district_id, n, datetime.now(timezone.utc).isoformat()))
+    conn.commit()
+    return n
+
 def overpass(q: str, retries: int = 4):
     delay = 30
     for attempt in range(retries + 1):

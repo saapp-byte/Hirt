@@ -5,9 +5,9 @@ import { C } from '../theme';
 import { FadeIn, PressScale, PulseRings } from '../ui';
 
 const LEVELS = [
-  ['#2E9E8A', 'Sakin', 'Son zamanlarda dikkat çeken olay yok.'],
-  ['#E8A317', 'Tedbirli', 'Bazı saatlerde dikkatli olmak iyi olur.'],
-  ['#E5484D', 'Dikkatli ol', 'Yakın zamanda çok sayıda olay bildirildi.'],
+  ['#2E9E8A', 'Sakin', 'Son 30 günde dikkat çeken olay görünmüyor.'],
+  ['#E8A317', 'Tedbirli', 'Son 30 günde olay sayısı belirgin.'],
+  ['#E5484D', 'Dikkatli ol', 'Son 30 günde çok sayıda olay bildirildi.'],
 ];
 
 export default function Onboarding({ onStart }: { onStart: () => void }) {
@@ -34,7 +34,7 @@ export default function Onboarding({ onStart }: { onStart: () => void }) {
           </Svg>
           </View>
           <Text style={s.title}>Gideceğin yerin nasıl olduğunu önceden gör</Text>
-          <Text style={s.text}>Haberlerden ve komşularından gelen bilgiyle, bir bölgenin bu gece nasıl olduğunu tek bakışta öğren.</Text>
+          <Text style={s.text}>Haberlerde bildirilen olaylara dayanarak, bir bölgede son zamanlarda neler olduğunu tek bakışta gör.</Text>
         </View>
       )}
 
@@ -59,8 +59,8 @@ export default function Onboarding({ onStart }: { onStart: () => void }) {
           <Text style={s.title}>Önce güvenin ve mahremiyetin</Text>
           {[
             ['Kişileri değil, olayları gösteririz', 'Hiçbir kişi veya grup etiketlenmez.'],
-            ['Her bilginin kaynağı yanında', 'Haber, resmi açıklama ya da topluluk bildirimi olduğunu görürsün.'],
-            ['Konumun cihazında kalır', 'Konumunu sunucuya göndermeyiz.'],
+            ['Her bilginin kaynağı yanında', 'Olayın hangi haberden geldiğini görür, haberi açıp okuyabilirsin.'],
+            ['Konumunu istemeyiz', 'Uygulama kişisel veri toplamaz.'],
           ].map(([t, d]) => (
             <View key={t} style={s.level}>
               <View style={[s.swatch, { backgroundColor: C.teal, width: 12, height: 12, borderRadius: 6, marginTop: 6 }]} />

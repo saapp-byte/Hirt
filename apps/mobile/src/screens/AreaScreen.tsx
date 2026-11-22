@@ -63,14 +63,7 @@ export default function AreaScreen({ summary, onBack }: { summary: Summary; onBa
             </View>
           );
         })}
-        <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
-          <Pressable style={[s.btn, { backgroundColor: C.ink }]} onPress={() => Alert.alert('Yakında', 'Oylama sonraki sürümde.')}>
-            <Text style={[s.btnText, { color: C.bg }]}>Burası sakin</Text>
-          </Pressable>
-          <Pressable style={[s.btn, { borderWidth: 1.5, borderColor: C.ink }]} onPress={() => Alert.alert('Yakında', 'Oylama sonraki sürümde.')}>
-            <Text style={s.btnText}>Dikkat edilmeli</Text>
-          </Pressable>
-        </View>
+        <Text style={s.note}>Olaylar haber başlıklarından otomatik çıkarılır ve hatalı olabilir. Emin olmak için “Haberi aç” ile kaynağı oku. Acil durumda 112’yi ara.</Text>
       </ScrollView>
     </View>
   );

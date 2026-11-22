@@ -41,6 +41,10 @@ def export(out):
                     write(out / "summary" / f"{h['id']}.json", service.get_summary(h["id"]))
                     n_sum += 1
     conn = gazetteer.ensure()
+    rows = conn.execute("SELECT id, level, name, province_id, lat, lng FROM places WHERE level IN ('il','ilce') ORDER BY id").fetchall()
+    iller = {r[0]: r[2] for r in rows if r[1] == "il"}
+    write(out / "places.json", [{"id": r[0], "level": r[1], "name": r[2], "il": iller.get(r[3], ""),
+                                 "lat": round(r[4], 4), "lng": round(r[5], 4)} for r in rows])
     count = lambda lvl: conn.execute("SELECT COUNT(*) FROM places WHERE level=?", (lvl,)).fetchone()[0]
     events, sample = evs
     write(out / "status.json", {

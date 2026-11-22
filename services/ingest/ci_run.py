@@ -44,6 +44,28 @@ def gazetteer_step(minutes):
         time.sleep(10)
     return conn.execute("SELECT COUNT(*) FROM loaded").fetchone()[0]  # yüklü il sayısı
 
+def mahalle_step(minutes):
+    """Odaktaki illerin mahallelerini ilçe ilçe indirir. Başarısız olan ilçe sonraki turda yeniden denenir."""
+    import build_gazetteer as bg
+    deadline = time.time() + minutes * 60
+    conn = gazetteer.ensure()
+    for plate in PROVINCES:
+        rows = conn.execute(
+            "SELECT id, name, osm_id FROM places WHERE level='ilce' AND province_id=? AND osm_id IS NOT NULL "
+            "AND id NOT IN (SELECT district_id FROM loaded_mah) ORDER BY id", (plate,)).fetchall()
+        for did, name, osm in rows:
+            if time.time() > deadline:
+                print("[mahalle] zaman bütçesi doldu; kalanlar sonraki turda.", flush=True)
+                return conn.execute("SELECT COALESCE(SUM(n),0) FROM loaded_mah").fetchone()[0]
+            try:
+                data = bg.overpass(bg.query_district(osm), retries=2)
+                n = bg.load_district(conn, did, plate, bg.parse(data.get("elements", [])))
+                print(f"[mahalle] {name}: {n} mahalle", flush=True)
+            except Exception as e:
+                print(f"[mahalle] {name} başarısız: {str(e)[:80]}", flush=True)
+            time.sleep(8)
+    return conn.execute("SELECT COALESCE(SUM(n),0) FROM loaded_mah").fetchone()[0]
+
 def finalize():
     """SQLite dosyalarını tek parça hâle getir (kalıcı branch'e kopyalanacak).
     Süreçte açık kalmış bağlantı varsa journal_mode değişmez ('database is locked'); o durumda
@@ -74,6 +96,8 @@ def main(out):
     st = jobs.read_status()
     first = not (DATA_DIR / "events.db").exists() or "last_gz" not in st
     gz = gazetteer_step(float(os.environ.get("GAZETTEER_MINUTES") or 40))
+    if len(PROVINCES) <= 3 and os.environ.get("HIRT_MAHALLE") != "0":
+        gz += mahalle_step(float(os.environ.get("MAHALLE_MINUTES") or 25))  # yeni konum gelince eski haberler yeniden işlenir
     reprocess = (not first) and gz > st.get("last_gz", -1)
     args = Namespace(days=30, quick=False, only=("" if _P == "all" else ",".join(str(x) for x in PROVINCES)), no_google=False, no_direct=False, no_pages=False,
                      max_pages=int(os.environ.get("MAX_PAGES") or 150), reprocess=reprocess, dry_run=False, loop_hours=0)

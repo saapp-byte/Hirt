@@ -1,16 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapArt from '../MapArt';
-import { Summary, adviceTr, levelColor, levelSegments } from '../api';
+import { Summary, adviceTr, levelColor, levelSegments, updatedTr } from '../api';
 import { C } from '../theme';
 import { FadeIn, PressScale } from '../ui';
 import PlacePicker from './PlacePicker';
+import { findMyPlace } from '../location';
 
-type Props = { summary: Summary | null; onPick: (id: number) => void; onOpen: () => void; hintOpen: boolean; onCloseHint: () => void };
+type Props = { summary: Summary | null; updated?: string | null; onPick: (id: number) => void; onOpen: () => void; hintOpen: boolean; onCloseHint: () => void };
 
-export default function MapScreen({ summary, onPick, onOpen, hintOpen, onCloseHint }: Props) {
-  const [when, setWhen] = useState('Bu gece');
+export default function MapScreen({ summary, updated, onPick, onOpen, hintOpen, onCloseHint }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [locBusy, setLocBusy] = useState(false);
+  const [locNote, setLocNote] = useState<string | null>(null);
+  const locate = async () => {
+    setLocBusy(true); setLocNote(null);
+    const r = await findMyPlace();
+    setLocBusy(false);
+    if ('error' in r) return setLocNote(r.error);
+    setLocNote(`Konumuna en yakın bölge: ${r.name} (yaklaşık, ${r.km} km)`);
+    onPick(r.id);
+  };
   const slide = useRef(new Animated.Value(320)).current;
   useEffect(() => {
     Animated.timing(slide, { toValue: 0, duration: 520, delay: 150, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
@@ -19,23 +29,18 @@ export default function MapScreen({ summary, onPick, onOpen, hintOpen, onCloseHi
   const segs = summary ? levelSegments(summary.level) : 0;
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
-      <MapArt />
+      <MapArt color={summary ? levelColor(summary.level) : undefined} />
       <View style={s.top}>
         <Pressable style={s.search} onPress={() => setPickerOpen(true)} accessibilityLabel="Yer ara">
           <Text style={s.searchText}>Yer ara: il, ilçe, mahalle</Text>
         </Pressable>
-        {summary?.time_reliable === true && (
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          {['Şimdi', 'Bu gece', 'Hafta sonu'].map((t) => (
-            <PressScale key={t} onPress={() => setWhen(t)} style={[s.chip, when === t && s.chipOn]}>
-              <Text style={[s.chipText, when === t && { color: C.bg }]}>{t}</Text>
-            </PressScale>
-          ))}
-        </View>
-        )}
+        <Pressable style={s.locBtn} onPress={locate} disabled={locBusy} accessibilityLabel="Bulunduğum yeri bul">
+          <Text style={s.locText}>{locBusy ? 'Konum aranıyor…' : 'Bulunduğum yeri bul'}</Text>
+        </Pressable>
+        {!!locNote && <Text style={s.locNote}>{locNote}</Text>}
         {hintOpen && (
           <FadeIn style={s.hint} delay={700}>
-            <Text style={s.hintText}>Turuncu alanlar, son haftalarda olay bildirilen yerleri gösterir. Aşağıdaki kart bulunduğun bölgeyi özetler.</Text>
+            <Text style={s.hintText}>Yukarıdan bir il, ilçe veya mahalle seç. Kart, son 30 günde haberlerde geçen olayları özetler. Arkadaki harita sadece süstür.</Text>
             <PressScale onPress={onCloseHint} style={s.hintBtn}><Text style={s.hintBtnText}>Anladım</Text></PressScale>
           </FadeIn>
         )}
@@ -50,13 +55,14 @@ export default function MapScreen({ summary, onPick, onOpen, hintOpen, onCloseHi
               <Text style={s.change}>Yer değiştir ›</Text>
             </Pressable>
             <View style={[s.pill, { backgroundColor: color }]}>
-              <Text style={s.pillText}>{summary.level === 'Kayıt yok' ? summary.level : `${summary.time_reliable === false ? 'Son 30 gün' : when}: ${summary.level}`}</Text>
+              <Text style={s.pillText}>{summary.level === 'Kayıt yok' ? summary.level : `Son 30 gün: ${summary.level}`}</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: 6 }}>
               {[1, 2, 3, 4, 5].map((i) => <FadeIn key={i} rise={0} delay={500 + i * 90} style={{ flex: 1 }}><View style={[s.seg, i <= segs && { backgroundColor: color }]} /></FadeIn>)}
             </View>
             <Text style={s.body}>{adviceTr(summary.level)}</Text>
             {summary.sample_data && <Text style={s.tag}>ÖRNEK VERİ</Text>}
+            {!!updated && <Text style={s.upd}>Veri güncellendi: {updatedTr(updated)}</Text>}
             <PressScale style={s.btn} onPress={onOpen}><Text style={s.btnText}>Nedenini ve detayları gör</Text></PressScale>
           </>
         )}
@@ -69,6 +75,9 @@ export default function MapScreen({ summary, onPick, onOpen, hintOpen, onCloseHi
 const s = StyleSheet.create({
   top: { position: 'absolute', top: 48, left: 16, right: 16, gap: 10 },
   search: { height: 54, borderRadius: 27, backgroundColor: C.card, borderWidth: 1, borderColor: C.line, paddingHorizontal: 20, justifyContent: 'center', elevation: 4 },
+  locBtn: { alignSelf: 'flex-start', minHeight: 44, paddingHorizontal: 18, borderRadius: 22, backgroundColor: C.ink, justifyContent: 'center' },
+  locText: { color: C.bg, fontSize: 15, fontWeight: '600' },
+  locNote: { fontSize: 13, color: C.ink, backgroundColor: C.card, borderRadius: 12, padding: 10, overflow: 'hidden' },
   searchText: { fontSize: 16, color: C.sub },
   chip: { minHeight: 44, paddingHorizontal: 18, borderRadius: 22, backgroundColor: C.card, borderWidth: 1, borderColor: C.line, justifyContent: 'center' },
   chipOn: { backgroundColor: C.ink, borderColor: C.ink },
@@ -79,6 +88,7 @@ const s = StyleSheet.create({
   hintBtnText: { color: C.ink, fontWeight: '700', fontSize: 14 },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: C.card, borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, paddingTop: 14, gap: 12, elevation: 12 },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#DDD2BC', alignSelf: 'center' },
+  upd: { fontSize: 12, color: C.sub },
   place: { fontSize: 24, fontWeight: '700', color: C.ink },
   pill: { alignSelf: 'flex-start', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18 },
   pillText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },

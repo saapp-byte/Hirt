@@ -30,6 +30,9 @@ jobs:
       - name: Bağımlılıkları kur
         run: npm install --no-audit --no-fund
 
+      - name: Konum paketini kur (SDK'ya uygun sürüm)
+        run: npx expo install expo-location
+
       - name: Uygulama adı ve paket adı
         run: python3 prepare_build.py
 

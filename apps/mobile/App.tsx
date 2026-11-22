@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { Summary, fetchAreas, fetchSummary } from './src/api';
+import { Summary, fetchAreas, fetchSummary, fetchUpdated } from './src/api';
 import { C } from './src/theme';
 import { FadeIn } from './src/ui';
 import AreaScreen from './src/screens/AreaScreen';
@@ -17,9 +17,11 @@ export default function App() {
   const [hintOpen, setHintOpen] = useState(true);
 
   const [areaId, setAreaId] = useState<number | null>(null);
+  const [updated, setUpdated] = useState<string | null>(null);
 
   // Açılışta İstanbul (plaka 34) açılır; il listesi alınamazsa yine de 34 denenir
   useEffect(() => {
+    fetchUpdated().then(setUpdated);
     fetchAreas().then((a) => setAreaId(a.some((x) => x.id === 34) ? 34 : a.length ? a[0].id : 34));
   }, []);
 
@@ -42,7 +44,7 @@ export default function App() {
       <StatusBar style="dark" />
       <FadeIn key={screen} rise={10} style={{ flex: 1 }}>
         {screen === 'onboard' && <Onboarding onStart={() => setScreen('map')} />}
-        {screen === 'map' && <MapScreen summary={summary} onPick={setAreaId} onOpen={() => setScreen('area')} hintOpen={hintOpen} onCloseHint={() => setHintOpen(false)} />}
+        {screen === 'map' && <MapScreen summary={summary} updated={updated} onPick={setAreaId} onOpen={() => setScreen('area')} hintOpen={hintOpen} onCloseHint={() => setHintOpen(false)} />}
         {screen === 'area' && summary && <AreaScreen summary={summary} onBack={() => setScreen('map')} />}
         {screen === 'info' && <HowItWorks />}
       </FadeIn>

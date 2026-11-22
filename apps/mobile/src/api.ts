@@ -72,10 +72,10 @@ export const levelSegments = (level: string) =>
 // Sade Türkçe öneri ve seviye rengi
 export const adviceTr = (level: string) =>
   ({
-    'Sakin': 'Rahatça gezebilirsin. Her zamanki önlemlerin yeterli.',
-    'Hafif tedbirli': 'Gündüz rahat gezebilirsin. Gece ara sokaklar yerine ana caddeleri tercih et.',
-    'Tedbirli': 'Gece mümkünse bu bölgeden kaçın. Gerekiyorsa yalnız gitme.',
-    'Dikkatli ol': 'Son zamanlarda çok sayıda olay bildirildi. Gerekmedikçe bu bölgeye gitme.',
+    'Sakin': 'Son 30 günde haberlerde dikkat çeken bir olay görünmüyor. Yine de çevrene her zaman dikkat et.',
+    'Hafif tedbirli': 'Son 30 günde birkaç olay bildirildi. Aşağıdaki ayrıntılara bakıp kendin karar ver.',
+    'Tedbirli': 'Son 30 günde olay sayısı belirgin. Gitmeden önce ayrıntılara bak, gerekirse yalnız gitme.',
+    'Dikkatli ol': 'Son 30 günde çok sayıda olay bildirildi. Gitmeden önce ayrıntılara bak.',
     'Kayıt yok': 'Tarama sonucunda bu bölge için son 30 günde kayıt bulunamadı. Uygulama sınırlı sayıda haberi tarar; bu, bölgede olay olmadığı anlamına gelmez. Çevrene her zaman dikkat et.',
   } as Record<string, string>)[level] ?? '';
 export const levelColor = (level: string) =>
@@ -95,3 +95,25 @@ export async function fetchAreas(parent?: number): Promise<Area[]> {
     return [];
   }
 }
+
+// Verinin ne zaman üretildiği (status.json)
+export async function fetchUpdated(): Promise<string | null> {
+  try {
+    const res = await Promise.race([
+      fetch(`${API_URL}/status.json`),
+      new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
+    ]);
+    if (!res.ok) return null;
+    const j = await res.json();
+    return typeof j.olusturma === 'string' ? j.olusturma : null;
+  } catch {
+    return null;
+  }
+}
+export const updatedTr = (isoStr: string) => {
+  const m = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60000);
+  if (m < 2) return 'az önce';
+  if (m < 60) return `${m} dakika önce`;
+  if (m < 60 * 24) return `${Math.floor(m / 60)} saat önce`;
+  return `${Math.floor(m / 1440)} gün önce`;
+};
