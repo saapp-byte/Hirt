@@ -20,12 +20,16 @@ import gazetteer  # noqa: E402
 import jobs  # noqa: E402
 from paths import DATA_DIR  # noqa: E402
 
+# Odak: varsayılan yalnızca İstanbul (34). Tüm iller için HIRT_PROVINCES=all, birkaç il için 34,06,35.
+_P = (os.environ.get("HIRT_PROVINCES") or "34").strip().lower()
+PROVINCES = list(range(1, 82)) if _P == "all" else [int(x) for x in _P.split(",") if x.strip()]
+
 def gazetteer_step(minutes):
     import build_gazetteer as bg
     deadline = time.time() + minutes * 60
     conn = gazetteer.ensure()
     done = {r[0] for r in conn.execute("SELECT province_id FROM loaded")}
-    for plate in range(1, 82):
+    for plate in PROVINCES:
         if plate in done:
             continue
         if time.time() > deadline:
@@ -38,7 +42,7 @@ def gazetteer_step(minutes):
         except Exception as e:
             print(f"[gazetteer] il {plate:02d} başarısız: {str(e)[:80]}", flush=True)
         time.sleep(10)
-    return conn.execute("SELECT COUNT(*) FROM loaded").fetchone()[0]
+    return conn.execute("SELECT COUNT(*) FROM loaded").fetchone()[0]  # yüklü il sayısı
 
 def finalize():
     """SQLite dosyalarını tek parça hâle getir (kalıcı branch'e kopyalanacak).
@@ -71,7 +75,7 @@ def main(out):
     first = not (DATA_DIR / "events.db").exists() or "last_gz" not in st
     gz = gazetteer_step(float(os.environ.get("GAZETTEER_MINUTES") or 40))
     reprocess = (not first) and gz > st.get("last_gz", -1)
-    args = Namespace(days=30, quick=False, only="", no_google=False, no_direct=False, no_pages=False,
+    args = Namespace(days=30, quick=False, only=("" if _P == "all" else ",".join(str(x) for x in PROVINCES)), no_google=False, no_direct=False, no_pages=False,
                      max_pages=int(os.environ.get("MAX_PAGES") or 150), reprocess=reprocess, dry_run=False, loop_hours=0)
     err = None
     try:
