@@ -41,13 +41,26 @@ def gazetteer_step(minutes):
     return conn.execute("SELECT COUNT(*) FROM loaded").fetchone()[0]
 
 def finalize():
-    """SQLite dosyalarını tek parça hâle getir (kalıcı branch'e kopyalanacak)."""
+    """SQLite dosyalarını tek parça hâle getir (kalıcı branch'e kopyalanacak).
+    Süreçte açık kalmış bağlantı varsa journal_mode değişmez ('database is locked'); o durumda
+    VACUUM INTO ile bağımsız, tek dosyalık bir kopya üretip yerine koyarız."""
+    import gc
     import sqlite3
+    gc.collect()  # açık kalmış bağlantıları kapat
     for db in DATA_DIR.glob("*.db"):
-        c = sqlite3.connect(db)
-        c.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-        c.execute("PRAGMA journal_mode=DELETE")
-        c.close()
+        try:
+            c = sqlite3.connect(db, timeout=60)
+            c.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            c.execute("PRAGMA journal_mode=DELETE")
+            c.close()
+        except sqlite3.OperationalError as e:
+            print(f"[finalize] {db.name}: {e}; VACUUM INTO ile kopyalanıyor", flush=True)
+            tmp = db.with_name(db.name + ".tmp")
+            tmp.unlink(missing_ok=True)
+            c = sqlite3.connect(db, timeout=60)
+            c.execute("VACUUM INTO ?", (str(tmp),))
+            c.close()
+            os.replace(tmp, db)
     for junk in list(DATA_DIR.glob("*-wal")) + list(DATA_DIR.glob("*-shm")):
         junk.unlink()
 
