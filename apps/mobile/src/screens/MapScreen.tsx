@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Easing, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapArt from '../MapArt';
-import { Area, Summary, adviceTr, levelColor, levelSegments } from '../api';
+import { Summary, adviceTr, levelColor, levelSegments } from '../api';
 import { C } from '../theme';
 import { FadeIn, PressScale } from '../ui';
+import PlacePicker from './PlacePicker';
 
-type Props = { summary: Summary | null; areas: Area[]; onPick: (id: number) => void; onOpen: () => void; hintOpen: boolean; onCloseHint: () => void };
+type Props = { summary: Summary | null; onPick: (id: number) => void; onOpen: () => void; hintOpen: boolean; onCloseHint: () => void };
 
-export default function MapScreen({ summary, areas, onPick, onOpen, hintOpen, onCloseHint }: Props) {
+export default function MapScreen({ summary, onPick, onOpen, hintOpen, onCloseHint }: Props) {
   const [when, setWhen] = useState('Bu gece');
   const [pickerOpen, setPickerOpen] = useState(false);
   const slide = useRef(new Animated.Value(320)).current;
@@ -20,8 +21,8 @@ export default function MapScreen({ summary, areas, onPick, onOpen, hintOpen, on
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <MapArt />
       <View style={s.top}>
-        <Pressable style={s.search} onPress={() => Alert.alert('Yakında', 'Yer arama sonraki sürümde.')} accessibilityLabel="Yer ara">
-          <Text style={s.searchText}>Yer ara (yakında)</Text>
+        <Pressable style={s.search} onPress={() => setPickerOpen(true)} accessibilityLabel="Yer ara">
+          <Text style={s.searchText}>Yer ara: il, ilçe, mahalle</Text>
         </Pressable>
         {summary?.time_reliable === true && (
         <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -44,9 +45,9 @@ export default function MapScreen({ summary, areas, onPick, onOpen, hintOpen, on
         <View style={s.handle} />
         {!summary ? <ActivityIndicator color={C.ink} style={{ margin: 40 }} /> : (
           <>
-            <Pressable onPress={() => setPickerOpen(true)} accessibilityLabel="İlçe değiştir" style={s.placeRow}>
-              <Text style={s.place}>{summary.name}, {summary.district}</Text>
-              <Text style={s.change}>İlçe değiştir ›</Text>
+            <Pressable onPress={() => setPickerOpen(true)} accessibilityLabel="Yer değiştir" style={s.placeRow}>
+              <Text style={s.place}>{summary.place_level === 'il' ? summary.name : `${summary.name}, ${summary.district}`}</Text>
+              <Text style={s.change}>Yer değiştir ›</Text>
             </Pressable>
             <View style={[s.pill, { backgroundColor: color }]}>
               <Text style={s.pillText}>{summary.level === 'Kayıt yok' ? summary.level : `${summary.time_reliable === false ? 'Son 30 gün' : when}: ${summary.level}`}</Text>
@@ -60,26 +61,7 @@ export default function MapScreen({ summary, areas, onPick, onOpen, hintOpen, on
           </>
         )}
       </Animated.View>
-      <Modal visible={pickerOpen} animationType="slide" transparent onRequestClose={() => setPickerOpen(false)}>
-        <View style={s.modalBg}>
-          <View style={s.modalCard}>
-            <Text style={s.modalTitle}>İlçe seç</Text>
-            <ScrollView>
-              {areas.length === 0 && <Text style={s.rowSub}>İlçe listesi alınamadı. API çalışıyor mu?</Text>}
-              {areas.map((a) => (
-                <Pressable key={a.id} style={s.row} onPress={() => { onPick(a.id); setPickerOpen(false); }}>
-                  <View style={[s.dot, { backgroundColor: levelColor(a.level) }]} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.rowName}>{a.name}</Text>
-                    <Text style={s.rowSub}>{a.count > 0 ? `${a.count} olay · ${a.level}` : 'Kayıt yok'}</Text>
-                  </View>
-                </Pressable>
-              ))}
-            </ScrollView>
-            <PressScale style={s.btn} onPress={() => setPickerOpen(false)}><Text style={s.btnText}>Kapat</Text></PressScale>
-          </View>
-        </View>
-      </Modal>
+      <PlacePicker visible={pickerOpen} onClose={() => setPickerOpen(false)} onPick={onPick} />
     </View>
   );
 }

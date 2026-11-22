@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "mobile-tmp",
-    "slug": "mobile-tmp",
-    "version": "1.0.0",
+    "name": "Hirt",
+    "slug": "hirt",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,7 +16,8 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.saappbyte.hirt"
     },
     "web": {
       "favicon": "./assets/favicon.png"

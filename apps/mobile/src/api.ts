@@ -2,13 +2,19 @@
 // Yerel denemede: EXPO_PUBLIC_API_URL=http://localhost:8000 (apps/api/dev_server.py aynı yolları sunar).
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://saapp-byte.github.io/Hirt';
 
-export type Summary = {
-  name: string; district: string; level: string; score: number;
-  by_time: number[]; sample_data: boolean; time_reliable?: boolean; window_days?: number; event_count?: number;
-  events: { kind: string; occurred_at: string; source: string; confidence: number }[];
+export type Ev = {
+  kind: string; occurred_at: string; source: string; confidence: number;
+  place?: string; precision?: string; street?: string | null;
+  time_precision?: string | null; outcome?: string | null; url?: string;
 };
 
-const day = 86800000;
+export type Summary = {
+  name: string; district: string; level: string; score: number; place_level?: string;
+  by_time: number[]; sample_data: boolean; time_reliable?: boolean; window_days?: number; event_count?: number;
+  events: Ev[];
+};
+
+const day = 86400000;
 const iso = (d: number) => new Date(Date.now() - d * day).toISOString();
 
 // API'ye ulaşılamazsa gösterilen örnek veri
@@ -37,6 +43,24 @@ export async function fetchSummary(id = 1): Promise<{ data: Summary; live: boole
 export const KIND_TR: Record<string, string> = {
   fight: 'Kavga bildirimi', assault: 'Saldırı bildirimi', stabbing: 'Bıçaklı saldırı bildirimi',
 };
+const AYLAR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+const pad = (n: number) => String(n).padStart(2, '0');
+
+// Haberdeki olay zamanı. Türkiye saatiyle (UTC+3) gösterilir; saat haberde yoksa dürüstçe söylenir.
+export function whenTr(e: Ev): string {
+  const t = new Date(new Date(e.occurred_at).getTime() + 3 * 3600000); // UTC+3
+  const date = `${t.getUTCDate()} ${AYLAR[t.getUTCMonth()]}`;
+  const h = t.getUTCHours();
+  if (e.time_precision === 'dakika' || e.time_precision === 'saat') return `${date} · ${pad(h)}:${pad(t.getUTCMinutes())}`;
+  if (e.time_precision === 'dilim') {
+    const part = h < 4 ? 'gece' : h < 6 ? 'sabaha karşı' : h < 11 ? 'sabah' : h < 14 ? 'öğle' : h < 18 ? 'öğleden sonra' : h < 23 ? 'akşam' : 'gece';
+    return `${date} · ${part} (yaklaşık)`;
+  }
+  return `${date} · saati haberde yok`;
+}
+export const outcomeTr = (o?: string | null) =>
+  o === 'died' ? 'Haberde ölüm bildirilmiş' : o === 'injured' ? 'Haberde yaralanma bildirilmiş' : null;
+
 export const confidenceTr = (c: number) => (c >= 0.7 ? 'yüksek' : c >= 0.5 ? 'orta' : 'düşük');
 export const agoTr = (isoStr: string) => {
   const d = Math.floor((Date.now() - new Date(isoStr).getTime()) / day);
