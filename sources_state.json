@@ -1,0 +1,62 @@
+{
+ "https://www.gzt.com/rss-feeds?category=/gundem/guvenlik": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.gzt.com/rss-feeds?category=/gundem/yerel-haberler": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.gzt.com/rss-feeds?category=/gundem/afet-kaza": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.gzt.com/rss?category=gundem": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.haberturk.com/rss/yerel-haberler.xml": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.haberturk.com/rss": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.aa.com.tr/tr/rss/default?cat=guncel": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.trthaber.com/sondakika.rss": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.ntv.com.tr/gundem.rss": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.cnnturk.com/feed/rss/all/news": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.hurriyet.com.tr/rss/gundem": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.sabah.com.tr/rss/gundem.xml": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.milliyet.com.tr/rss/rssnew/gundemrss.xml": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.cumhuriyet.com.tr/rss/son_dakika.xml": {
+  "fails": 0,
+  "disabled": false
+ },
+ "https://www.yenisafak.com/rss?xml=gundem": {
+  "fails": 0,
+  "disabled": false
+ }
+}
